@@ -32,16 +32,20 @@ pipeline {
         echo 'Running SonarCloud analysis...'
         withSonarQubeEnv('My Sonar Server') {
           sh '''
+            npm run test -- --coverage
             npx sonarqube-scanner \
               -Dsonar.projectKey=Sparsh300_todo-api \
               -Dsonar.organization=parsh300 \
               -Dsonar.sources=. \
+              -Dsonar.coverage.exclusions=**/tests/** \
+              -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
               -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=$SONAR_TOKEN
+              -Dsonar.token=$SONAR_TOKEN
           '''
         }
       }
     }
+
 
 
     stage('Security') {
