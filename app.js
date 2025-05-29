@@ -1,11 +1,16 @@
 const express = require('express');
 const app = express();
-const taskRoutes = require('./routes/tasks');
 
 app.use(express.json());
-app.use('/tasks', taskRoutes);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+let tasks = [];
 
-module.exports = app;
+app.get('/tasks', (req, res) => {
+  res.json(tasks);
+});
+
+const server = app.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
+
+module.exports = server;
