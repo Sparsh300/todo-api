@@ -33,8 +33,8 @@ pipeline {
         withSonarQubeEnv('My Sonar Server') {
           sh '''
             sonar-scanner \
-              -Dsonar.projectKey=todo-api \
-              -Dsonar.organization=sparsh300 \
+              -Dsonar.projectKey=Sparsh300_todo-api \
+              -Dsonar.organization=parsh300 \
               -Dsonar.sources=. \
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.login=$SONAR_TOKEN
