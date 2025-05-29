@@ -32,12 +32,12 @@ pipeline {
         echo 'Running SonarCloud analysis...'
         withSonarQubeEnv('My Sonar Server') {
           sh '''
-            npm run test -- --coverage
-            npx sonarqube-scanner \
+            docker run --rm -v $(pwd):/usr/src/app -w /usr/src/app todo-api npm run test -- --coverage
+            docker run --rm -v $(pwd):/usr/src/app -w /usr/src/app todo-api npx sonarqube-scanner \
               -Dsonar.projectKey=Sparsh300_todo-api \
               -Dsonar.organization=parsh300 \
               -Dsonar.sources=. \
-              -Dsonar.coverage.exclusions=**/tests/** \
+              -Dsonar.exclusions=**/tests/** \
               -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.token=$SONAR_TOKEN
@@ -45,6 +45,7 @@ pipeline {
         }
       }
     }
+
 
 
 
