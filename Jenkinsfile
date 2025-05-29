@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    SONAR_TOKEN = credentials('sonar-token')  // Replace with your Jenkins credential ID
+    SONAR_TOKEN = credentials('sonar-token')  
   }
 
   stages {
@@ -29,9 +29,16 @@ pipeline {
 
     stage('Code Quality') {
       steps {
-        echo 'Running SonarCloud scanner...'
+        echo 'Running SonarCloud analysis...'
         withSonarQubeEnv('My Sonar Server') {
-          sh 'sonar-scanner -Dsonar.projectKey=todo-api -Dsonar.sources=. -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN'
+          sh '''
+            sonar-scanner \
+              -Dsonar.projectKey=todo-api \
+              -Dsonar.organization=sparsh300 \
+              -Dsonar.sources=. \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.login=$SONAR_TOKEN
+          '''
         }
       }
     }
