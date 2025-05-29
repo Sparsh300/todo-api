@@ -77,34 +77,35 @@ pipeline {
     }
 
     stage('Monitoring') {
-      steps {
-        echo '📈 Running post-deployment monitoring...'
-    
-        script {
-          try {
-            sh '''
-              # Clean up if already running
-              docker rm -f todo-monitor || true
-              
-              # Start container without host port binding
-              docker run -d --name todo-monitor todo-api
-              
-              # Wait for app to start
-              sleep 5
-              
-              # Get container IP address
-              CONTAINER_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' todo-monitor)
-              
-              # Run the health check against the internal IP
-              curl --fail http://$CONTAINER_IP:3000/tasks
-            '''
-            echo '✅ Health check passed!'
-          } catch (err) {
-            echo '❌ Health check failed!'
-            sh 'docker logs todo-monitor || true'
-            error("🚫 Stopping pipeline due to failed health check.")
-          } finally {
-            sh 'docker rm -f todo-monitor || true'
+        steps {
+          echo '📈 Running post-deployment monitoring...'
+      
+          script {
+            try {
+              sh '''
+                # Clean up if already running
+                docker rm -f todo-monitor || true
+                
+                # Start container without host port binding
+                docker run -d --name todo-monitor todo-api
+                
+                # Wait for app to start
+                sleep 5
+                
+                # Get container IP address
+                CONTAINER_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' todo-monitor)
+                
+                # Run the health check against the internal IP
+                curl --fail http://$CONTAINER_IP:3000/tasks
+              '''
+              echo '✅ Health check passed!'
+            } catch (err) {
+              echo '❌ Health check failed!'
+              sh 'docker logs todo-monitor || true'
+              error("🚫 Stopping pipeline due to failed health check.")
+            } finally {
+              sh 'docker rm -f todo-monitor || true'
+            }
           }
         }
       }
