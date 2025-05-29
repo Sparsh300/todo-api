@@ -61,48 +61,47 @@ pipeline {
 
     stage('Release') {
       steps {
-        echo 'Pushing image to DockerHub...'
-        script {
-          def IMAGE_NAME = "sparsh300/todo-api"
-          def IMAGE_TAG = "v1.0"
+        echo 'Releasing: Tagging and pushing Docker image to DockerHub...'
     
-          withCredentials([usernamePassword(credentialsId: 'sparsh30', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-            sh """
-              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-              docker tag todo-api ${IMAGE_NAME}:${IMAGE_TAG}
-              docker tag todo-api ${IMAGE_NAME}:latest
-              docker push ${IMAGE_NAME}:${IMAGE_TAG}
-              docker push ${IMAGE_NAME}:latest
-            """
-          }
+        withCredentials([usernamePassword(
+          credentialsId: 'sparsh30', // Your Jenkins credential ID
+          usernameVariable: 'DOCKER_USERNAME',
+          passwordVariable: 'DOCKER_PASSWORD'
+        )]) {
+          sh '''
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            docker tag todo-api $DOCKER_USERNAME/todo-api:latest
+            docker push $DOCKER_USERNAME/todo-api:latest
+          '''
         }
       }
     }
 
 
-        stage('Monitoring') {
-      steps {
-        echo 'Running post-deployment monitoring...'
 
-        script {
-          try {
-            sh '''
-              docker run -d -p 3000:3000 --name todo-monitor todo-api
-              sleep 5
-              curl --fail http://localhost:3000/tasks
-            '''
-            echo '✅ Health check passed!'
-          } catch (err) {
-            echo '❌ Health check failed!'
-            sh 'docker logs todo-monitor || true'
-            error("Stopping pipeline due to failed health check.")
-          } finally {
-            sh 'docker rm -f todo-monitor || true'
+    stage('Monitoring') {
+        steps {
+          echo 'Running post-deployment monitoring...'
+  
+          script {
+            try {
+              sh '''
+                docker run -d -p 3000:3000 --name todo-monitor todo-api
+                sleep 5
+                curl --fail http://localhost:3000/tasks
+              '''
+              echo '✅ Health check passed!'
+            } catch (err) {
+              echo '❌ Health check failed!'
+              sh 'docker logs todo-monitor || true'
+              error("Stopping pipeline due to failed health check.")
+            } finally {
+              sh 'docker rm -f todo-monitor || true'
+            }
           }
         }
       }
     }
-  }
 
   post {
     always {
