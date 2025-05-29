@@ -3,14 +3,16 @@ const app = express();
 
 app.use(express.json());
 
-let tasks = [];
-
+// Your routes here
 app.get('/tasks', (req, res) => {
-  res.json(tasks);
+  res.json([]);
 });
 
-const server = app.listen(3000,'0.0.0.0' ,() => {
-  console.log("Server running on port 3000");
-});
+// Only listen if not required by another file (i.e. during test)
+if (require.main === module) {
+  app.listen(3000, () => {
+    console.log('Server running on port 3000');
+  });
+}
 
-module.exports = server;
+module.exports = app; // export the app instead of the server
