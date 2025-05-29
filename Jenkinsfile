@@ -80,10 +80,10 @@ pipeline {
     }
 
 
-    stage('Monitoring') {
+        stage('Monitoring') {
       steps {
         echo 'Running post-deployment monitoring...'
-    
+
         script {
           try {
             sh '''
@@ -102,17 +102,18 @@ pipeline {
         }
       }
     }
-
+  }
 
   post {
     always {
-      echo 'Cleaning up workspace...'
+      echo 'Cleaning up...'
     }
     success {
-      echo '✅ Pipeline completed successfully!'
+      echo 'Pipeline completed successfully!'
     }
     failure {
-      echo '❌ Pipeline failed. Please check the logs.'
+      echo 'Pipeline failed.'
     }
   }
 }
+
