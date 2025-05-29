@@ -82,9 +82,9 @@ pipeline {
         script {
           try {
             sh '''
-              docker run -d -p 3000:3000 --name todo-monitor todo-api
+              docker run -d -p 3001:3000 --name todo-monitor todo-api
               sleep 5
-              curl --fail http://localhost:3000/tasks
+              curl --fail http://localhost:3001/tasks
             '''
             echo '✅ Health check passed!'
           } catch (err) {
