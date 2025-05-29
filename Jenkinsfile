@@ -61,17 +61,24 @@ pipeline {
 
     stage('Release') {
       steps {
-        echo 'Pushing Docker image to DockerHub...'
+        echo 'Pushing image to DockerHub...'
         script {
-          def image = "sparsh30/todo-api:latest"
-          sh """
-            echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-            docker tag todo-api ${image}
-            docker push ${image}
-          """
+          def IMAGE_NAME = "sparsh300/todo-api"
+          def IMAGE_TAG = "v1.0"
+    
+          withCredentials([usernamePassword(credentialsId: 'sparsh30', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+            sh """
+              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+              docker tag todo-api ${IMAGE_NAME}:${IMAGE_TAG}
+              docker tag todo-api ${IMAGE_NAME}:latest
+              docker push ${IMAGE_NAME}:${IMAGE_TAG}
+              docker push ${IMAGE_NAME}:latest
+            """
+          }
         }
       }
     }
+
 
     stage('Monitoring') {
       steps {
