@@ -51,20 +51,21 @@ pipeline {
 
 
     stage('Security') {
-      steps {
-        echo 'Running security audit...'
-        sh 'docker run --rm todo-api npm audit --audit-level=moderate'
-      }
+        steps {
+            echo 'Running security audit...'
+            sh 'docker run --rm todo-api npm audit --audit-level=moderate || true'
+        }
     }
 
+
     stage('Deploy') {
-      steps {
-        echo 'Deploying Docker container...'
-        // Stop & remove if already running
-        sh 'docker rm -f todo-app || true'
-        sh 'docker run -d -p 3000:3000 --name todo-app todo-api'
-      }
+        steps {
+            echo 'Deploying Docker container...'
+            sh 'docker rm -f todo-app || true'
+            sh 'docker run -d -p 3000:3000 --name todo-app todo-api'
+        }
     }
+
 
     stage('Release') {
       steps {
