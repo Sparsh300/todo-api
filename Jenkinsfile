@@ -32,8 +32,8 @@ pipeline {
         echo 'Running SonarCloud analysis...'
         withSonarQubeEnv('My Sonar Server') {
           sh '''
-            docker run --rm -v $(pwd):/usr/src/app -w /usr/src/app todo-api npm run test -- --coverage
-            docker run --rm -v $(pwd):/usr/src/app -w /usr/src/app todo-api npx sonarqube-scanner \
+            docker run --rm todo-api npm run test -- --coverage
+            docker run --rm todo-api npx sonarqube-scanner \
               -Dsonar.projectKey=Sparsh300_todo-api \
               -Dsonar.organization=parsh300 \
               -Dsonar.sources=. \
@@ -45,6 +45,7 @@ pipeline {
         }
       }
     }
+
 
 
 
