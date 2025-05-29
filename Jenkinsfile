@@ -32,7 +32,7 @@ pipeline {
         echo 'Running SonarCloud analysis...'
         withSonarQubeEnv('My Sonar Server') {
           sh '''
-            sonar-scanner \
+            npx sonarqube-scanner \
               -Dsonar.projectKey=Sparsh300_todo-api \
               -Dsonar.organization=parsh300 \
               -Dsonar.sources=. \
@@ -42,6 +42,7 @@ pipeline {
         }
       }
     }
+
 
     stage('Security') {
       steps {
