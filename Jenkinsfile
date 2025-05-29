@@ -2,7 +2,8 @@ pipeline {
   agent any
 
   environment {
-    SONAR_TOKEN = credentials('sonar-token')  
+    SONAR_TOKEN = credentials('sonar-token')
+    DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
   }
 
   stages {
@@ -32,66 +33,62 @@ pipeline {
         echo 'Running SonarCloud analysis...'
         withSonarQubeEnv('My Sonar Server') {
           sh '''
-            docker run --rm todo-api npm run test -- --coverage
-            docker run --rm todo-api npx sonarqube-scanner \
+            sonar-scanner \
               -Dsonar.projectKey=Sparsh300_todo-api \
               -Dsonar.organization=parsh300 \
               -Dsonar.sources=. \
-              -Dsonar.exclusions=**/tests/** \
-              -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info \
               -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.token=$SONAR_TOKEN
+              -Dsonar.login=$SONAR_TOKEN
           '''
         }
       }
     }
 
-
-
-
-
     stage('Security') {
-        steps {
-            echo 'Running security audit...'
-            sh 'docker run --rm todo-api npm audit --audit-level=moderate || true'
-        }
+      steps {
+        echo 'Running security audit...'
+        sh 'docker run --rm todo-api npm audit --audit-level=moderate || true'
+      }
     }
-
 
     stage('Deploy') {
-        steps {
-            echo 'Deploying Docker container...'
-            sh 'docker rm -f todo-app || true'
-            sh 'docker run -d -p 3000:3000 --name todo-app todo-api'
-        }
+      steps {
+        echo 'Deploying Docker container...'
+        sh 'docker rm -f todo-app || true'
+        sh 'docker run -d -p 3000:3000 --name todo-app todo-api'
+      }
     }
-
 
     stage('Release') {
       steps {
-        echo 'Release step (e.g., versioning, tagging, pushing image to Docker Hub)...'
-        // Add release logic here
+        echo 'Pushing Docker image to DockerHub...'
+        script {
+          def image = "sparsh30/todo-api:latest"
+          sh """
+            echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
+            docker tag todo-api ${image}
+            docker push ${image}
+          """
+        }
       }
     }
 
     stage('Monitoring') {
       steps {
-        echo 'Monitoring stub (Add Prometheus/Grafana, logs, alerts, etc.)'
-        // Add actual monitoring logic here if needed
+        echo 'Monitoring placeholder: implement Grafana/Prometheus/log alerts here.'
       }
     }
   }
 
   post {
     always {
-      echo 'Cleaning up...'
+      echo 'Cleaning up workspace...'
     }
     success {
-      echo 'Pipeline completed successfully!'
+      echo '✅ Pipeline completed successfully!'
     }
     failure {
-      echo 'Pipeline failed.'
+      echo '❌ Pipeline failed. Please check the logs.'
     }
   }
 }
- 
