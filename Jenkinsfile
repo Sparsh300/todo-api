@@ -16,11 +16,11 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                sh 'npm install'
-                sh 'npm test'
+                echo 'Running tests inside Docker...'
+                sh 'docker run --rm todo-api npm test'
             }
         }
+
 
         stage('Code Quality') {
             steps {
