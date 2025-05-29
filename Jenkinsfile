@@ -82,10 +82,19 @@ pipeline {
 
     stage('Monitoring') {
       steps {
-        echo 'Monitoring placeholder: implement Grafana/Prometheus/log alerts here.'
+        echo 'Running post-deployment monitoring...'
+        
+        // Run the container temporarily for health check
+        sh '''
+          docker run -d -p 3000:3000 --name todo-monitor todo-api
+          sleep 5
+          curl --fail http://localhost:3000/tasks || echo "Health check failed"
+          docker logs todo-monitor
+          docker rm -f todo-monitor
+        '''
       }
     }
-  }
+
 
   post {
     always {
