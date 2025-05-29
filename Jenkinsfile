@@ -79,12 +79,24 @@ pipeline {
     stage('Monitoring') {
       steps {
         echo '📈 Running post-deployment monitoring...'
+    
         script {
           try {
             sh '''
-              docker run -d -p 3001:3000 --name todo-monitor todo-api
+              # Clean up if already running
+              docker rm -f todo-monitor || true
+              
+              # Start container without host port binding
+              docker run -d --name todo-monitor todo-api
+              
+              # Wait for app to start
               sleep 5
-              curl --fail http://localhost:3001/tasks
+              
+              # Get container IP address
+              CONTAINER_IP=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' todo-monitor)
+              
+              # Run the health check against the internal IP
+              curl --fail http://$CONTAINER_IP:3000/tasks
             '''
             echo '✅ Health check passed!'
           } catch (err) {
@@ -97,7 +109,7 @@ pipeline {
         }
       }
     }
-  }
+
 
   post {
     always {
