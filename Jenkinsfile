@@ -1,65 +1,82 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        SONAR_TOKEN = credentials('sonar-token')  // optional if using SonarCloud later
-        DOCKER_IMAGE = 'todo-api'
+  environment {
+    SONAR_TOKEN = credentials('sonar-token')  // Replace with your Jenkins credential ID
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
     }
 
-    stages {
-        stage('Build') {
-            steps {
-                echo 'Building project...'
-                sh 'docker build -t $DOCKER_IMAGE .'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo 'Running tests inside Docker...'
-                sh 'docker run --rm todo-api npm test'
-            }
-        }
-
-
-        stage('Code Quality') {
-            steps {
-                echo 'Running SonarQube Analysis...'
-                withSonarQubeEnv('MySonarQube') {
-                    sh 'sonar-scanner'
-                }
-            }
-        }
-
-        stage('Security') {
-            steps {
-                echo 'Scanning for vulnerabilities...'
-                sh 'npm install -g snyk'
-                sh 'snyk test || true'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying to Docker (local)...'
-                sh 'docker stop todo-api || true && docker rm todo-api || true'
-                sh 'docker run -d -p 3000:3000 --name todo-api $DOCKER_IMAGE'
-            }
-        }
-
-        stage('Release') {
-            steps {
-                echo 'Tagging release...'
-                sh 'git tag v1.0.0 || true'
-                sh 'git push origin v1.0.0 || true'
-            }
-        }
-
-        stage('Monitoring') {
-            steps {
-                echo 'Pretending to monitor the app...'
-                sh 'curl -f http://localhost:3000/tasks || true'
-            }
-        }
+    stage('Build') {
+      steps {
+        echo 'Building project...'
+        sh 'docker build -t todo-api .'
+      }
     }
+
+    stage('Test') {
+      steps {
+        echo 'Running tests inside Docker...'
+        sh 'docker run --rm todo-api npm test'
+      }
+    }
+
+    stage('Code Quality') {
+      steps {
+        echo 'Running SonarCloud scanner...'
+        withSonarQubeEnv('My Sonar Server') {
+          sh 'sonar-scanner -Dsonar.projectKey=todo-api -Dsonar.sources=. -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN'
+        }
+      }
+    }
+
+    stage('Security') {
+      steps {
+        echo 'Running security audit...'
+        sh 'docker run --rm todo-api npm audit --audit-level=moderate'
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        echo 'Deploying Docker container...'
+        // Stop & remove if already running
+        sh 'docker rm -f todo-app || true'
+        sh 'docker run -d -p 3000:3000 --name todo-app todo-api'
+      }
+    }
+
+    stage('Release') {
+      steps {
+        echo 'Release step (e.g., versioning, tagging, pushing image to Docker Hub)...'
+        // Add release logic here
+      }
+    }
+
+    stage('Monitoring') {
+      steps {
+        echo 'Monitoring stub (Add Prometheus/Grafana, logs, alerts, etc.)'
+        // Add actual monitoring logic here if needed
+      }
+    }
+  }
+
+  post {
+    always {
+      echo 'Cleaning up...'
+    }
+    success {
+      echo 'Pipeline completed successfully!'
+    }
+    failure {
+      echo 'Pipeline failed.'
+    }
+  }
 }
+ 
