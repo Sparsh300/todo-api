@@ -83,7 +83,7 @@ pipeline {
     stage('Monitoring') {
       steps {
         echo 'Running post-deployment monitoring...'
-        
+    
         script {
           try {
             sh '''
@@ -102,7 +102,6 @@ pipeline {
         }
       }
     }
-
 
 
   post {
